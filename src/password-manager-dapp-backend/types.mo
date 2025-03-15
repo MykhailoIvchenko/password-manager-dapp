@@ -1,5 +1,5 @@
 import Trie "mo:base/Trie";
-
+  
 type Key<K> = Trie.Key<K>;
 
 type Secret = {
