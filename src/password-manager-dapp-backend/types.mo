@@ -13,5 +13,5 @@ type Secret = {
 type User = {
   principal_id: Text;
   username : Text;
-  secret_key_hash : Blob;
+  secret_key : Text;
 };
