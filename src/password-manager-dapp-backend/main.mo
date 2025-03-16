@@ -85,21 +85,25 @@ actor SecureStorage {
     };  
   };
 
-  public shared query ({caller}) func get_user_secrets_titles() : async [Text] {
+  private func get_user_secrets_data(caller: Principal) : ?Trie.Trie<Text, Types.Secret> {
     let authenticated = Helpers.is_authenticated(caller);
 
     if (not authenticated) {
-        throw Error.reject("Only authenticated users can obtain data");
+      return null;
     };
-    
+
     let principal_id = Principal.toText(caller);
 
-    let user_secrets = Trie.get(secrets, Helpers.key(principal_id), Text.equal);
+    return Trie.get(secrets, Helpers.key(principal_id), Text.equal);
+};
+
+
+  public query func get_user_secrets_titles({caller}: {caller: Principal}) : async [Text] {
+    let user_secrets = get_user_secrets_data(caller);
 
     switch (user_secrets) {
         case (?secrets_trie) {
             let iter = Trie.iter(secrets_trie);
-            
             var titles: [Text] = [];
 
             for ((key, _) in iter) {
@@ -109,6 +113,22 @@ actor SecureStorage {
             return titles;
         };
         case (null) return [];
+    };
+  };
+
+  public shared query ({caller}) func get_secret_phrase(title: Text) : async ?Text {
+    let user_secrets = get_user_secrets_data(caller);
+
+    switch (user_secrets) {
+        case (?secrets_trie) {
+            let target_secret = Trie.get(secrets_trie, Helpers.key(title), Text.equal);
+
+            switch (target_secret) {
+                case (?secret) return ?secret.secret;
+                case (null) return null;
+            };
+        };
+        case (null) return null;
     };
   }
 };
