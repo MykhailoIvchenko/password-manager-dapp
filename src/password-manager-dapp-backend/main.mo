@@ -9,6 +9,7 @@ import Helpers "helpers";
 actor SecureStorage {
   stable var usernames: Trie.Trie<Text, Text> = Trie.empty();
   stable var users: Trie.Trie<Text, Types.User> = Trie.empty();
+  stable var secrets: Trie.Trie<Text, Trie.Trie<Text, Types.Secret>> = Trie.empty();
 
   func is_username_exists(username: Text): Bool {
     switch (Trie.get(usernames, Helpers.key(username), Text.equal)) {
@@ -62,4 +63,23 @@ actor SecureStorage {
     return new_user;
   };
 
+  public shared query ({caller}) func get_secret_data(secret_title: Text) : async ?Types.Secret {
+    let authenticated = Helpers.is_authenticated(caller);
+
+    if (not authenticated) {
+      throw Error.reject("Only authenticated users can obtain data");
+    };
+
+    let principal_id = Principal.toText(caller);
+
+    let user_secrets = Trie.get(secrets, Helpers.key(principal_id), Text.equal);
+
+    switch (user_secrets) {
+      case (?secrets_trie) {
+        let target_secret = Trie.get(secrets_trie, Helpers.key(secret_title), Text.equal);
+        return target_secret;
+      };
+      case (null) return null;
+    };  
+  };
 };
