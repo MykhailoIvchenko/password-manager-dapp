@@ -3,6 +3,8 @@ import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Bool "mo:base/Bool";
 import Error "mo:base/Error";
+import Iter "mo:base/Iter";
+import Array "mo:base/Array";
 import Types "types";
 import Helpers "helpers";
 
@@ -82,4 +84,31 @@ actor SecureStorage {
       case (null) return null;
     };  
   };
+
+  public shared query ({caller}) func get_user_secrets_titles() : async [Text] {
+    let authenticated = Helpers.is_authenticated(caller);
+
+    if (not authenticated) {
+        throw Error.reject("Only authenticated users can obtain data");
+    };
+    
+    let principal_id = Principal.toText(caller);
+
+    let user_secrets = Trie.get(secrets, Helpers.key(principal_id), Text.equal);
+
+    switch (user_secrets) {
+        case (?secrets_trie) {
+            let iter = Trie.iter(secrets_trie);
+            
+            var titles: [Text] = [];
+
+            for ((key, _) in iter) {
+                titles := Array.append(titles, [key]);
+            };
+
+            return titles;
+        };
+        case (null) return [];
+    };
+  }
 };
