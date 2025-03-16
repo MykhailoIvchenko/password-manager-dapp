@@ -7,7 +7,7 @@ type Secret = {
   title : Text;
   website : Text;
   description : Text;
-  secret : Blob;
+  secret : Text;
 };
 
 type User = {

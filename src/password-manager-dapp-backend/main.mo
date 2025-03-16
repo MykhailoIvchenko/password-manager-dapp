@@ -3,12 +3,15 @@ import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Bool "mo:base/Bool";
 import Error "mo:base/Error";
+import Iter "mo:base/Iter";
+import Array "mo:base/Array";
 import Types "types";
 import Helpers "helpers";
 
 actor SecureStorage {
   stable var usernames: Trie.Trie<Text, Text> = Trie.empty();
   stable var users: Trie.Trie<Text, Types.User> = Trie.empty();
+  stable var secrets: Trie.Trie<Text, Trie.Trie<Text, Types.Secret>> = Trie.empty();
 
   func is_username_exists(username: Text): Bool {
     switch (Trie.get(usernames, Helpers.key(username), Text.equal)) {
@@ -62,4 +65,70 @@ actor SecureStorage {
     return new_user;
   };
 
+  public shared query ({caller}) func get_secret_data(secret_title: Text) : async ?Types.Secret {
+    let authenticated = Helpers.is_authenticated(caller);
+
+    if (not authenticated) {
+      throw Error.reject("Only authenticated users can obtain data");
+    };
+
+    let principal_id = Principal.toText(caller);
+
+    let user_secrets = Trie.get(secrets, Helpers.key(principal_id), Text.equal);
+
+    switch (user_secrets) {
+      case (?secrets_trie) {
+        let target_secret = Trie.get(secrets_trie, Helpers.key(secret_title), Text.equal);
+        return target_secret;
+      };
+      case (null) return null;
+    };  
+  };
+
+  private func get_user_secrets_data(caller: Principal) : ?Trie.Trie<Text, Types.Secret> {
+    let authenticated = Helpers.is_authenticated(caller);
+
+    if (not authenticated) {
+      return null;
+    };
+
+    let principal_id = Principal.toText(caller);
+
+    return Trie.get(secrets, Helpers.key(principal_id), Text.equal);
+};
+
+
+  public query func get_user_secrets_titles({caller}: {caller: Principal}) : async [Text] {
+    let user_secrets = get_user_secrets_data(caller);
+
+    switch (user_secrets) {
+        case (?secrets_trie) {
+            let iter = Trie.iter(secrets_trie);
+            var titles: [Text] = [];
+
+            for ((key, _) in iter) {
+                titles := Array.append(titles, [key]);
+            };
+
+            return titles;
+        };
+        case (null) return [];
+    };
+  };
+
+  public shared query ({caller}) func get_secret_phrase(title: Text) : async ?Text {
+    let user_secrets = get_user_secrets_data(caller);
+
+    switch (user_secrets) {
+        case (?secrets_trie) {
+            let target_secret = Trie.get(secrets_trie, Helpers.key(title), Text.equal);
+
+            switch (target_secret) {
+                case (?secret) return ?secret.secret;
+                case (null) return null;
+            };
+        };
+        case (null) return null;
+    };
+  }
 };
