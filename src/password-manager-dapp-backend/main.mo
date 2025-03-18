@@ -5,13 +5,72 @@ import Bool "mo:base/Bool";
 import Error "mo:base/Error";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Blob "mo:base/Blob";
+import Nat8 "mo:base/Nat8";
+import Buffer "mo:base/Buffer";
 import Types "types";
-import Helpers "helpers";
+import Helpers "utils/helpers";
+import Hex "utils/Hex";
 
 actor SecureStorage {
   stable var usernames: Trie.Trie<Text, Text> = Trie.empty();
   stable var users: Trie.Trie<Text, Types.User> = Trie.empty();
   stable var secrets: Trie.Trie<Text, Trie.Trie<Text, Types.Secret>> = Trie.empty();
+
+  type VETKD_SYSTEM_API = actor {
+    vetkd_public_key : ({
+        canister_id : ?Principal;
+        derivation_path : [Blob];
+        key_id : { curve : { #bls12_381_g2 }; name : Text };
+    }) -> async ({ public_key : Blob });
+    vetkd_derive_encrypted_key : ({
+        derivation_path : [Blob];
+        derivation_id : Blob;
+        key_id : { curve : { #bls12_381_g2 }; name : Text };
+        encryption_public_key : Blob;
+    }) -> async ({ encrypted_key : Blob });
+  };
+
+  let vetkd_system_api : VETKD_SYSTEM_API = actor ("s55qq-oqaaa-aaaaa-aaakq-cai");
+
+  public shared ({ caller }) func get_user_encryption_key(user_secret_key: Text) : async Text {
+    let { public_key } = await vetkd_system_api.vetkd_public_key({
+        canister_id = null;
+        derivation_path = Array.make(Text.encodeUtf8(user_secret_key));
+        key_id = { curve = #bls12_381_g2; name = "user_key_" # Principal.toText(caller) };
+    });
+    Hex.encode(Blob.toArray(public_key));
+  };
+
+  private func natToBigEndianByteArray(len : Nat, n : Nat) : [Nat8] {
+    let ith_byte = func(i : Nat) : Nat8 {
+        assert (i < len);
+        let shift : Nat = 8 * (len - 1 - i);
+        Nat8.fromIntWrap(n / 2 ** shift);
+    };
+    Array.tabulate<Nat8>(len, ith_byte);
+  };
+
+  public shared ({ caller }) func get_encrypted_symmetric_key(data_id : Nat, encryption_public_key : Blob, user_secret_key : Text) : async Text {
+    let caller_text = Principal.toText(caller);
+    
+    let derivation_path = Array.make(Text.encodeUtf8(user_secret_key));
+    
+    let buf = Buffer.Buffer<Nat8>(32);
+    buf.append(Buffer.fromArray(natToBigEndianByteArray(16, data_id)));
+    buf.append(Buffer.fromArray(Blob.toArray(Text.encodeUtf8(caller_text))));
+    let derivation_id = Blob.fromArray(Buffer.toArray(buf)); 
+    
+    let { encrypted_key } = await vetkd_system_api.vetkd_derive_encrypted_key({
+        derivation_id;
+        derivation_path = derivation_path;
+        key_id = { curve = #bls12_381_g2; name = "user_key_" # Principal.toText(caller) };
+        encryption_public_key;
+    });
+    
+    Hex.encode(Blob.toArray(encrypted_key))
+};
+
 
   func is_username_exists(username: Text): Bool {
     switch (Trie.get(usernames, Helpers.key(username), Text.equal)) {
@@ -95,8 +154,7 @@ actor SecureStorage {
     let principal_id = Principal.toText(caller);
 
     return Trie.get(secrets, Helpers.key(principal_id), Text.equal);
-};
-
+  };
 
   public query func get_user_secrets_titles({caller}: {caller: Principal}) : async [Text] {
     let user_secrets = get_user_secrets_data(caller);
