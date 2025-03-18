@@ -188,5 +188,34 @@ actor SecureStorage {
         };
         case (null) return null;
     };
-  }
+  };
+
+  public shared ({caller}) func create_user_secret(title: Text, website: Text, description: Text, secret: Text) : async Text {
+    if (Text.size(title) > 15) {
+        throw Error.reject("Title must not exceed 15 characters.");
+    };
+
+    let existingSecret = await get_secret_data(title);
+
+    switch existingSecret {
+        case (?secret) {
+          throw Error.reject("A secret with this title already exists.");
+        };
+        case (_) {
+            let principal_id = Principal.toText(caller);
+
+            let new_secret: Types.Secret = {
+                principal_id = principal_id;
+                title = title;
+                website = website;
+                description = description;
+                secret = secret;
+            };
+
+            secrets := Trie.put2D(secrets, Helpers.key(principal_id), Text.equal, Helpers.key(title), Text.equal, new_secret);
+
+            return "User secret created successfully.";
+        };
+    };
+};
 };
