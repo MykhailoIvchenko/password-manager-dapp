@@ -37,7 +37,7 @@ actor SecureStorage {
     let { public_key } = await vetkd_system_api.vetkd_public_key({
         canister_id = null;
         derivation_path = Array.make(Text.encodeUtf8(user_secret_key));
-        key_id = { curve = #bls12_381_g2; name = "user_key_" # Principal.toText(caller) };
+        key_id = { curve = #bls12_381_g2; name = "user_key" };
     });
     Hex.encode(Blob.toArray(public_key));
   };
@@ -64,7 +64,7 @@ actor SecureStorage {
     let { encrypted_key } = await vetkd_system_api.vetkd_derive_encrypted_key({
         derivation_id;
         derivation_path = derivation_path;
-        key_id = { curve = #bls12_381_g2; name = "user_key_" # Principal.toText(caller) };
+        key_id = { curve = #bls12_381_g2; name = "user_key" };
         encryption_public_key;
     });
     
