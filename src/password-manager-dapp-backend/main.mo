@@ -6,12 +6,55 @@ import Error "mo:base/Error";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Types "types";
-import Helpers "helpers";
+import Helpers "utils/helpers";
+import Hex "utils/Hex";
 
 actor SecureStorage {
   stable var usernames: Trie.Trie<Text, Text> = Trie.empty();
   stable var users: Trie.Trie<Text, Types.User> = Trie.empty();
   stable var secrets: Trie.Trie<Text, Trie.Trie<Text, Types.Secret>> = Trie.empty();
+
+  type VETKD_SYSTEM_API = actor {
+    vetkd_public_key : ({
+        canister_id : ?Principal;
+        derivation_path : [Blob];
+        key_id : { curve : { #bls12_381_g2 }; name : Text };
+    }) -> async ({ public_key : Blob });
+    vetkd_derive_encrypted_key : ({
+        derivation_path : [Blob];
+        derivation_id : Blob;
+        key_id : { curve : { #bls12_381_g2 }; name : Text };
+        encryption_public_key : Blob;
+    }) -> async ({ encrypted_key : Blob });
+  };
+
+  let vetkd_system_api : VETKD_SYSTEM_API = actor ("s55qq-oqaaa-aaaaa-aaakq-cai");
+
+  public shared ({ caller }) func get_user_encryption_key(user_secret_key: Text) : async Text {
+    let { public_key } = await vetkd_system_api.vetkd_public_key({
+        canister_id = null;
+        derivation_path = Array.make(Text.encodeUtf8(user_secret_key));
+        key_id = { curve = #bls12_381_g2; name = "user_key_" # Principal.toText(caller) };
+    });
+    Hex.encode(Blob.toArray(public_key));
+  };
+
+  public shared ({ caller }) func encrypt_sensitive_data(user_secret_key : Text, sensitive_data : Text) : async Text {
+    let encryption_key_hex = await get_user_encryption_key(user_secret_key);
+    let encryption_key = Hex.decode(encryption_key_hex);
+
+    let encrypted_data = AES.encrypt(sensitive_data, encryption_key);
+    Hex.encode(Blob.toArray(encrypted_data));
+  };
+
+  public shared ({ caller }) func decrypt_sensitive_data(user_secret_key : Text, encrypted_data_hex : Text) : async Text {
+    let encryption_key_hex = await get_user_encryption_key(user_secret_key);
+    let encryption_key = Hex.decode(encryption_key_hex);
+
+    let encrypted_data = Hex.decode(encrypted_data_hex);
+    let decrypted_data = AES.decrypt(encrypted_data, encryption_key);
+    Text.decodeUtf8(decrypted_data)!;
+};
 
   func is_username_exists(username: Text): Bool {
     switch (Trie.get(usernames, Helpers.key(username), Text.equal)) {
@@ -96,7 +139,6 @@ actor SecureStorage {
 
     return Trie.get(secrets, Helpers.key(principal_id), Text.equal);
 };
-
 
   public query func get_user_secrets_titles({caller}: {caller: Principal}) : async [Text] {
     let user_secrets = get_user_secrets_data(caller);
