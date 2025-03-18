@@ -1,0 +1,17 @@
+.fallback-page {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: #292828;
+  color: #fff;
+  gap: 20px;
+
+  &_title {
+    font-size: 3rem;
+    font-weight: 700;
+    text-align: center;
+  }
+}

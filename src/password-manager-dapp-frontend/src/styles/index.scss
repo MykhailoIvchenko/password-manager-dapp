@@ -1,0 +1,45 @@
+body {
+  height: 100vh;
+  margin: 0;
+  overflow-y: hidden;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #00e0ff;
+  }
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+}
+
+*::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #00e0ff;
+  border-radius: 360px;
+  border: none;
+}
+
+@import url('./reset.scss');
+@import url('./loader.scss');
+@import url('./button.scss');
+@import url('./login.scss');
+@import url('./modal.scss');
+@import url('./fallback-page.scss');
