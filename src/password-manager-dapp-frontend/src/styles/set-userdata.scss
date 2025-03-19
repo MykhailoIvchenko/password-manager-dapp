@@ -1,0 +1,17 @@
+.add-userdata {
+  &_title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: white;
+  }
+}
+
+.userdata-form {
+  width: 300px;
+
+  &_button {
+    width: 100%;
+  }
+}
