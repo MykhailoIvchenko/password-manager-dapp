@@ -1,5 +1,6 @@
 import { useSelectUser } from '../redux/hooks/selectHooks/useSelectUser';
 import LoginPage from './LoginPage';
+import SetUserData from './SetUserData';
 
 const CheckAccess = () => {
   const user = useSelectUser();
@@ -9,7 +10,7 @@ const CheckAccess = () => {
   }
 
   if (!user?.username) {
-    return <></>;
+    return <SetUserData />;
   }
 
   return <></>;

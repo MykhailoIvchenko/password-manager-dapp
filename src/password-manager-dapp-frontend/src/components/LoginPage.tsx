@@ -3,6 +3,7 @@ import usePrincipalIdDispatch from '../redux/hooks/dispatchHooks/usePrincipalIdD
 // @ts-ignore
 import { ConnectWallet, useIdentityKit } from '@nfid/identitykit/react';
 import { useEffect } from 'react';
+import LoginButton from './LoginButton';
 
 const LoginPage: React.FC = () => {
   const setPrincipalId = usePrincipalIdDispatch();
@@ -10,8 +11,6 @@ const LoginPage: React.FC = () => {
 
   const handleLoginCompleted = () => {
     if (identity) {
-      alert('Logged in');
-      console.log(identity);
       const principalId = identity.getPrincipal().toString();
 
       setPrincipalId(principalId);
@@ -23,7 +22,13 @@ const LoginPage: React.FC = () => {
   }, [identity]);
 
   return (
-    <>{isInitializing || isUserConnecting ? <Loader /> : <ConnectWallet />}</>
+    <>
+      {isInitializing || isUserConnecting ? (
+        <Loader />
+      ) : (
+        <ConnectWallet connectButtonComponent={LoginButton} />
+      )}
+    </>
   );
 };
 
