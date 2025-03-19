@@ -13,7 +13,7 @@ const CheckAccess = () => {
     return <SetUserData />;
   }
 
-  return <></>;
+  return <>User secrets</>;
 };
 
 export default CheckAccess;

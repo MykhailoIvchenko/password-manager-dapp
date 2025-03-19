@@ -4,6 +4,8 @@ import { useDfinityAgent } from './useDfinityAgent';
 import useUserNameDispatch from '../redux/hooks/dispatchHooks/useUserNameDispatch';
 import { toast } from 'react-toastify';
 import { IUser } from '../utils/types';
+//@ts-ignore
+import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
 
 type UseUserData = () => {
   isLoading: boolean;
@@ -27,10 +29,15 @@ export const useUserData: UseUserData = () => {
       setIsLoading(true);
 
       if (principalId && actor) {
-        const userData = (await actor.get_user_by_id()) as IUser;
+        // const userData = (await actor.get_user_by_id()) as IUser;
+        const userDataArray =
+          await password_manager_dapp_backend.get_user_by_id();
 
-        if (userData) {
-          setUsername(userData.username);
+        if (userDataArray.length > 0) {
+          const userData = userDataArray[0];
+          console.log(userData);
+
+          setUsername(userData!.username);
         }
       }
     } catch (error) {
@@ -45,11 +52,18 @@ export const useUserData: UseUserData = () => {
       setIsLoading(true);
 
       if (principalId && actor) {
-        await actor.register_user(newUsername, userSecretKey);
+        // await actor.register_user(newUsername, userSecretKey);
+
+        await password_manager_dapp_backend.register_user(
+          newUsername,
+          userSecretKey
+        );
+
         setUsername(newUsername);
       }
     } catch (error) {
-      toast.error('An error occured during the username saving');
+      console.log(error);
+      toast.error('An error occured during the registration');
     } finally {
       setIsLoading(false);
     }
@@ -61,5 +75,5 @@ export const useUserData: UseUserData = () => {
     }
   }, [actor]);
 
-  return { isLoading, setUserName: saveUserData };
+  return { isLoading, saveUserData };
 };

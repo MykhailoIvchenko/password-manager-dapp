@@ -3,11 +3,11 @@ import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Bool "mo:base/Bool";
 import Error "mo:base/Error";
-import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Blob "mo:base/Blob";
 import Nat8 "mo:base/Nat8";
 import Buffer "mo:base/Buffer";
+import Debug "mo:base/Debug";
 import Types "types";
 import Helpers "utils/helpers";
 import Hex "utils/Hex";
@@ -80,9 +80,9 @@ actor SecureStorage {
   };
 
   public query ({ caller }) func get_user_by_id() : async ?Types.User {
-    let authenticated = Helpers.is_authenticated(caller);
+    // let authenticated = Helpers.is_authenticated(caller);
 
-    if (authenticated == false) return null;
+    // if (authenticated == false) return null;
 
     let principal_id = Principal.toText(caller);
 
@@ -93,11 +93,11 @@ actor SecureStorage {
   };
 
   public shared ({caller}) func register_user(username: Text, secret_key: Text) : async Types.User {
-    var authenticated = Helpers.is_authenticated(caller);
+    // var authenticated = Helpers.is_authenticated(caller);
 
-    if (not authenticated) {
-      throw Error.reject("Only authenticated users can register");
-    };
+    // if (not authenticated) {
+    //   throw Error.reject("Only authenticated users can register");
+    // };
 
     var is_valid_username = Helpers.validate_username(username);
 
@@ -106,7 +106,7 @@ actor SecureStorage {
     };
 
     var username_exists = is_username_exists(username);
-
+    
     if (username_exists) {
       throw Error.reject("Username should be unique. And the username you've provided already exists");
     };
@@ -125,11 +125,11 @@ actor SecureStorage {
   };
 
   public shared query ({caller}) func get_secret_data(secret_title: Text) : async ?Types.Secret {
-    let authenticated = Helpers.is_authenticated(caller);
+    // let authenticated = Helpers.is_authenticated(caller);
 
-    if (not authenticated) {
-      throw Error.reject("Only authenticated users can obtain data");
-    };
+    // if (not authenticated) {
+    //   throw Error.reject("Only authenticated users can obtain data");
+    // };
 
     let principal_id = Principal.toText(caller);
 
@@ -145,11 +145,11 @@ actor SecureStorage {
   };
 
   private func get_user_secrets_data(caller: Principal) : ?Trie.Trie<Text, Types.Secret> {
-    let authenticated = Helpers.is_authenticated(caller);
+    // let authenticated = Helpers.is_authenticated(caller);
 
-    if (not authenticated) {
-      return null;
-    };
+    // if (not authenticated) {
+    //   return null;
+    // };
 
     let principal_id = Principal.toText(caller);
 
@@ -218,4 +218,12 @@ actor SecureStorage {
         };
     };
 };
+
+  public query func get_all_users() : async Trie.Trie<Text, Types.User> {
+    users;
+  };
+
+  public query func get_all_usernames() : async Trie.Trie<Text, Text> {
+    usernames;
+  }
 };
