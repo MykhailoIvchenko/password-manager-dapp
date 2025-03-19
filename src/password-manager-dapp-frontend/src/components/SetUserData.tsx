@@ -59,6 +59,7 @@ const AddUserName: React.FC = () => {
               {...field}
               placeholder={'Enter your secret key...'}
               error={errors?.secretKey?.message}
+              type='password'
             />
           )}
         />

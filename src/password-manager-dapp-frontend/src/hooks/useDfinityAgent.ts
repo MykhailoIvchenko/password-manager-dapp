@@ -87,7 +87,6 @@ export const useDfinityAgent: UseDfinityAgent = () => {
         host,
         identity,
       });
-      console.log(canisterId);
 
       const generatedActor = Actor.createActor(idlFactory, {
         agent,
@@ -96,7 +95,6 @@ export const useDfinityAgent: UseDfinityAgent = () => {
 
       setActor(generatedActor);
     } catch (error) {
-      console.log(error);
       toast.error('An error occured during the agent initialization');
     }
   };
