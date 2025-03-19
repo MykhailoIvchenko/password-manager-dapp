@@ -225,5 +225,13 @@ actor SecureStorage {
 
   public query func get_all_usernames() : async Trie.Trie<Text, Text> {
     usernames;
+  };
+
+  public shared func clear_data() : async Bool {
+    users := Trie.empty();
+    usernames := Trie.empty();
+    secrets := Trie.empty();
+
+    return true;
   }
 };
