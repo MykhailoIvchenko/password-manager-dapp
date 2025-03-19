@@ -1,0 +1,22 @@
+.btn {
+  background: linear-gradient(90deg, #ff00ff, #00e0ff);
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 10px 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
+  transition: all 0.3s ease-in-out;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  box-shadow: 0 0 25px rgba(0, 224, 255, 0.8);
+  transform: scale(1.01);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
