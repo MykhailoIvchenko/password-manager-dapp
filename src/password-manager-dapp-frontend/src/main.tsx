@@ -7,7 +7,7 @@ import { Provider } from 'react-redux';
 import ToastProvider from './components/ToastProvider';
 // @ts-ignore
 import { IdentityKitProvider } from '@nfid/identitykit/react';
-import { NFIDW, Plug, InternetIdentity, Stoic, OISY } from "@nfid/identitykit"
+import { NFIDW, Plug, InternetIdentity, Stoic, OISY } from '@nfid/identitykit';
 import '@nfid/identitykit/react/styles.css';
 import './styles/index.scss';
 
