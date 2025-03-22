@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { IUser } from '../utils/types';
 //@ts-ignore
 import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
+import useUserDispatch from '../redux/hooks/dispatchHooks/useUserDispatch';
 
 type UseUserData = () => {
   isLoading: boolean;
@@ -17,6 +18,7 @@ export const useUserData: UseUserData = () => {
   const user = useSelectUser();
 
   const setUsername = useUserNameDispatch();
+  const setUserData = useUserDispatch();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -35,9 +37,14 @@ export const useUserData: UseUserData = () => {
 
         if (userDataArray.length > 0) {
           const userData = userDataArray[0];
-          console.log(userData);
 
-          setUsername(userData!.username);
+          const dataToSet = {
+            username: userData!.username,
+            principalId: principalId,
+            secretKey: userData!.secret_key,
+          };
+
+          setUserData(dataToSet);
         }
       }
     } catch (error) {

@@ -1,19 +1,15 @@
-import React, { memo, useState } from 'react';
-import { toast } from 'react-toastify';
-import clsx from 'clsx';
+import React, { memo } from 'react';
 import Button from '../ui/Button';
 
 interface ISecretItemProps {
   title: string;
+  handleGetSecretClick: VoidFunction;
 }
 
-const SecretItemComponent: React.FC<ISecretItemProps> = ({ title }) => {
-  const [showSecret, setShowSecret] = useState<boolean>(false);
-
-  const handleShowSecretClick = () => {
-    setShowSecret(true);
-  };
-
+const SecretItemComponent: React.FC<ISecretItemProps> = ({
+  title,
+  handleGetSecretClick,
+}) => {
   return (
     <div className={'secret-item'}>
       <div className='secret-item__text'>
@@ -22,8 +18,8 @@ const SecretItemComponent: React.FC<ISecretItemProps> = ({ title }) => {
 
       <Button
         type='button'
-        className='secret-item__details-button'
-        onClick={handleShowSecretClick}
+        addClasses='secret-item__details-button'
+        onClick={handleGetSecretClick}
         text={'Show secret'}
       />
     </div>

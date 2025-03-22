@@ -55,6 +55,8 @@ export const useSecrets: UseSecrets = () => {
       try {
         setSecretsTitles((prev) => [title, ...prev]);
 
+        console.log(principalId, user);
+
         if (!principalId || !user?.secretKey) {
           return;
         }
@@ -66,6 +68,8 @@ export const useSecrets: UseSecrets = () => {
           secret,
           actor
         );
+
+        console.log(encryptedSecretPhrase);
 
         if (encryptedSecretPhrase) {
           await password_manager_dapp_backend.create_user_secret(
@@ -86,6 +90,7 @@ export const useSecrets: UseSecrets = () => {
           await getSecretsTitlesAndSet();
         }
       } catch (error) {
+        console.log(error);
         toast.error('Something went wrong during the secret saving');
       }
     },

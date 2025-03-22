@@ -98,6 +98,7 @@ async function encryptWithSecretKey(
   await fetchKeyIfNeeded(secretId, userSecretKey, principalId, actor);
   const dataKey: CryptoKey | undefined = await get([secretId, principalId]);
 
+  console.log(dataKey);
   if (!dataKey) {
     return;
   }
