@@ -3,8 +3,8 @@ import { Controller, useForm } from 'react-hook-form';
 import Input from './ui/Input';
 import Loader from './ui/Loader';
 import Button from './ui/Button';
-import copyIcon from '../assets/img/copy.svg';
 import { toast } from 'react-toastify';
+import copyIcon from '../assets/img/copy.svg';
 
 interface IShowSecretProps {
   title: string;

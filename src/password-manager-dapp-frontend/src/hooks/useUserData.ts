@@ -3,7 +3,7 @@ import { useSelectUser } from '../redux/hooks/selectHooks/useSelectUser';
 import { useDfinityAgent } from './useDfinityAgent';
 import useUserNameDispatch from '../redux/hooks/dispatchHooks/useUserNameDispatch';
 import { toast } from 'react-toastify';
-import { IUser, IUserFromBackend } from '../utils/types';
+import { IUserFromBackend } from '../utils/types';
 //@ts-ignore
 // import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
 import useUserDispatch from '../redux/hooks/dispatchHooks/useUserDispatch';

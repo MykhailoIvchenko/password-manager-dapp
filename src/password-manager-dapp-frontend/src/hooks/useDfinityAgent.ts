@@ -9,8 +9,8 @@ type UseDfinityAgent = () => ActorSubclass<
   Record<string, ActorMethod<unknown[], unknown>>
 > | null;
 
-// const host = 'https://icp-api.io';
-const host = 'http://127.0.0.1:4943';
+const host = 'https://icp-api.io';
+// const host = 'http://127.0.0.1:4943';
 
 const canisterId = import.meta.env.VITE_CANISTER_ID_BACKEND;
 
