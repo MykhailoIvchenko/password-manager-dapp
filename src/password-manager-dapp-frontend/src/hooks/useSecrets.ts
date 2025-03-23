@@ -61,13 +61,15 @@ export const useSecrets: UseSecrets = () => {
           return;
         }
 
-        const encryptedSecretPhrase = await vetKeyService.encryptWithSecretKey(
-          title,
-          user?.secretKey,
-          principalId,
-          secret,
-          actor
-        );
+        const encryptedSecretPhrase = secret;
+
+        // const encryptedSecretPhrase = await vetKeyService.encryptWithSecretKey(
+        //   title,
+        //   user?.secretKey,
+        //   principalId,
+        //   secret,
+        //   actor
+        // );
 
         console.log(encryptedSecretPhrase);
 
@@ -111,13 +113,15 @@ export const useSecrets: UseSecrets = () => {
           await password_manager_dapp_backend.get_secret_data(title);
 
         if (secretFromBackend && secretFromBackend[0] && principalId) {
-          const decryptedSecret = vetKeyService.decryptWithSecretKey(
-            title,
-            principalId,
-            secretKey,
-            secretFromBackend[0].secret,
-            actor
-          );
+          const decryptedSecret = secretFromBackend[0].secret;
+
+          // const decryptedSecret = vetKeyService.decryptWithSecretKey(
+          //   title,
+          //   principalId,
+          //   secretKey,
+          //   secretFromBackend[0].secret,
+          //   actor
+          // );
 
           return decryptedSecret;
         }

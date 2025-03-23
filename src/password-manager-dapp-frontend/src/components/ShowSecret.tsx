@@ -47,8 +47,8 @@ const ShowSecret: React.FC<IShowSecretProps> = ({ title, getSecret }) => {
 
   if (decryptedSecret) {
     return (
-      <div className='show-secret-container'>
-        <h3 className='show-secret-form_title'>{title}</h3>
+      <div className='show-secret'>
+        <h3 className='show-secret_title'>{title}</h3>
 
         <p className='show-secret_decrypted'>
           <span>{decryptedSecret}</span>
@@ -66,12 +66,9 @@ const ShowSecret: React.FC<IShowSecretProps> = ({ title, getSecret }) => {
   }
 
   return (
-    <form
-      className='show-secret-container'
-      onSubmit={handleSubmit(getSecretInfo)}
-    >
-      <h3 className='show-secret-form_title'>{title}</h3>
-      <p>To get a secret enter your key</p>
+    <form className='show-secret' onSubmit={handleSubmit(getSecretInfo)}>
+      <h3 className='show-secret_title'>{title}</h3>
+      <p className='show-secret_subtitle'>To get a secret enter your key</p>
 
       <Controller
         name='secretKey'
@@ -94,7 +91,7 @@ const ShowSecret: React.FC<IShowSecretProps> = ({ title, getSecret }) => {
       ) : (
         <Button
           text={'Show secret'}
-          addClasses='show-secret-form_button'
+          addClasses='show-secret_button'
           type='submit'
         />
       )}
