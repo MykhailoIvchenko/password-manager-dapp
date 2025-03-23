@@ -7,7 +7,6 @@ import Array "mo:base/Array";
 import Blob "mo:base/Blob";
 import Nat8 "mo:base/Nat8";
 import Buffer "mo:base/Buffer";
-import Debug "mo:base/Debug";
 import Types "types";
 import Helpers "utils/helpers";
 import Hex "utils/Hex";
@@ -42,22 +41,27 @@ actor SecureStorage {
     Hex.encode(Blob.toArray(public_key));
   };
 
-  private func natToBigEndianByteArray(len : Nat, n : Nat) : [Nat8] {
-    let ith_byte = func(i : Nat) : Nat8 {
-        assert (i < len);
-        let shift : Nat = 8 * (len - 1 - i);
-        Nat8.fromIntWrap(n / 2 ** shift);
+  private func textToBigEndianByteArray(len: Nat, text: Text) : [Nat8] {
+    let bytes : [Nat8] = Blob.toArray(Text.encodeUtf8(text));
+
+    if (bytes.size() < len) {
+        let padding : [Nat8] = Array.freeze(Array.init<Nat8>(len - bytes.size(), 0));
+        return Array.append(bytes, padding);
+    } else if (bytes.size() > len) {
+        return Array.subArray<Nat8>(bytes, 0, len);
     };
-    Array.tabulate<Nat8>(len, ith_byte);
+
+    return bytes;
   };
 
-  public shared ({ caller }) func get_encrypted_symmetric_key(data_id : Nat, encryption_public_key : Blob, user_secret_key : Text) : async Text {
+
+  public shared ({ caller }) func get_encrypted_symmetric_key(data_id : Text, encryption_public_key : Blob, user_secret_key : Text) : async Text {
     let caller_text = Principal.toText(caller);
     
     let derivation_path = Array.make(Text.encodeUtf8(user_secret_key));
     
     let buf = Buffer.Buffer<Nat8>(32);
-    buf.append(Buffer.fromArray(natToBigEndianByteArray(16, data_id)));
+    buf.append(Buffer.fromArray(textToBigEndianByteArray(16, data_id)));
     buf.append(Buffer.fromArray(Blob.toArray(Text.encodeUtf8(caller_text))));
     let derivation_id = Blob.fromArray(Buffer.toArray(buf)); 
     
@@ -125,11 +129,11 @@ actor SecureStorage {
   };
 
   public shared query ({caller}) func get_secret_data(secret_title: Text) : async ?Types.Secret {
-    // let authenticated = Helpers.is_authenticated(caller);
+    let authenticated = Helpers.is_authenticated(caller);
 
-    // if (not authenticated) {
-    //   throw Error.reject("Only authenticated users can obtain data");
-    // };
+    if (not authenticated) {
+      throw Error.reject("Only authenticated users can obtain data");
+    };
 
     let principal_id = Principal.toText(caller);
 
@@ -156,7 +160,7 @@ actor SecureStorage {
     return Trie.get(secrets, Helpers.key(principal_id), Text.equal);
   };
 
-  public query func get_user_secrets_titles({caller}: {caller: Principal}) : async [Text] {
+  public query ({caller}) func get_user_secrets_titles() : async [Text] {
     let user_secrets = get_user_secrets_data(caller);
 
     switch (user_secrets) {
@@ -219,6 +223,7 @@ actor SecureStorage {
     };
 };
 
+  //Functions for development and debug
   public query func get_all_users() : async Trie.Trie<Text, Types.User> {
     users;
   };

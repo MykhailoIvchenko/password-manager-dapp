@@ -3,6 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Permissions-Policy" content="clipboard-write=(self)" />
+
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; 
+              script-src 'self' 'unsafe-eval' blob:; 
+              worker-src 'self' blob:;
+              style-src 'self' 'unsafe-inline'; 
+              img-src 'self' data: blob:; 
+              font-src 'self'; 
+              connect-src 'self' https://icp-api.io https://*.ic0.app;"
+    />
+
     <title>IC Password Manager</title>
     <base href="/" />
     <link rel="icon" href="/favicon.ico" />

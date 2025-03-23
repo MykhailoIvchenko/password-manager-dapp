@@ -1,6 +1,7 @@
 import { get, set } from 'idb-keyval';
 //@ts-ignore
 import * as vetkd from '../vetkd_user_lib/ic_vetkd_utils.js';
+import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
 
 const hexDecode = (hexString: string) =>
   Uint8Array.from(
@@ -43,11 +44,24 @@ async function fetchKeyIfNeeded(
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
 
-    const ekBytesHex = await actor.get_encrypted_symmetric_key(
-      secretId,
-      tsk.public_key()
-    );
-    const pkBytesHex = await actor.get_user_encryption_key(userSecretKey);
+    // const ekBytesHex = await actor.get_encrypted_symmetric_key(
+    //   secretId,
+    //   tsk.public_key(),
+    //   userSecretKey
+    // );
+    // const pkBytesHex = await actor.get_user_encryption_key(userSecretKey);
+
+    const ekBytesHex =
+      await password_manager_dapp_backend.get_encrypted_symmetric_key(
+        secretId,
+        tsk.public_key(),
+        userSecretKey
+      );
+
+    const pkBytesHex =
+      await password_manager_dapp_backend.get_user_encryption_key(
+        userSecretKey
+      );
 
     const secretIdBytes: Uint8Array =
       stringTo128BitBigEndianUint8Array(secretId);
@@ -84,6 +98,7 @@ async function encryptWithSecretKey(
   await fetchKeyIfNeeded(secretId, userSecretKey, principalId, actor);
   const dataKey: CryptoKey | undefined = await get([secretId, principalId]);
 
+  console.log(dataKey);
   if (!dataKey) {
     return;
   }

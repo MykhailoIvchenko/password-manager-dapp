@@ -1,0 +1,11 @@
+{
+  "password-manager-dapp-backend": {
+    "ic": "bxvs7-dyaaa-aaaag-at7iq-cai"
+  },
+  "password-manager-dapp-frontend": {
+    "ic": "b6wzd-vqaaa-aaaag-at7ja-cai"
+  },
+  "vetkd_system_api": {
+    "ic": "bquul-oaaaa-aaaag-at7ia-cai"
+  }
+}
