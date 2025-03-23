@@ -12,9 +12,15 @@ function App() {
       console.error('WebAssembly is not supported in this browser.');
     }
 
-    fetch(vetkd_wasm_url)
-      .then((res) => res.arrayBuffer())
-      .then((buffer) => WebAssembly.instantiate(buffer, {}))
+    // fetch(vetkd_wasm_url)
+    //   .then((res) => res.arrayBuffer())
+    //   .then((buffer) => WebAssembly.instantiate(buffer, {}))
+    //   .then((wasmModule) => {
+    //     vetkd_init(wasmModule.instance);
+    //   })
+    //   .catch((error) => console.error('Wasm Error', error.message));
+
+    WebAssembly.instantiateStreaming(fetch(vetkd_wasm_url), {})
       .then((wasmModule) => {
         vetkd_init(wasmModule.instance);
       })
