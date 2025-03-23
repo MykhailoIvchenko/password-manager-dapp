@@ -1,5 +1,11 @@
 import { ReactNode } from 'react';
 
+export interface IUserFromBackend {
+  username: string;
+  principalId?: string;
+  secret_key: string;
+}
+
 export interface IUser {
   username: string;
   principalId?: string;
