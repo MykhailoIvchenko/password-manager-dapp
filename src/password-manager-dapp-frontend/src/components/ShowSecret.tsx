@@ -33,10 +33,27 @@ const ShowSecret: React.FC<IShowSecretProps> = ({ title, getSecret }) => {
     setIsLoading(false);
   };
 
+  // const handleCopyClick = async () => {
+  //   try {
+  //     if (decryptedSecret) {
+  //       await navigator.clipboard.writeText(decryptedSecret);
+
+  //       toast.info('Your secret was copied to the clipboard');
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(error.message);
+  //   }
+  // };
+
   const handleCopyClick = async () => {
     try {
       if (decryptedSecret) {
-        await navigator.clipboard.writeText(decryptedSecret);
+        const textArea = document.createElement('textarea');
+        textArea.value = decryptedSecret;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
 
         toast.info('Your secret was copied to the clipboard');
       }

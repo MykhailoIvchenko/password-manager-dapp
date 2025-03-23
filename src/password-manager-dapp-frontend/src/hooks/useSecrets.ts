@@ -3,7 +3,7 @@ import { useSelectUser } from '../redux/hooks/selectHooks/useSelectUser';
 import { useDfinityAgent } from './useDfinityAgent';
 import { toast } from 'react-toastify'; //@ts-ignore
 // import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
-// import { vetKeyService } from '../services/vetkeyService';
+import { vetKeyService } from '../services/vetkeyService';
 import { ISecretData } from '../utils/types';
 
 type UseSecrets = () => {
@@ -60,15 +60,15 @@ export const useSecrets: UseSecrets = () => {
           return;
         }
 
-        const encryptedSecretPhrase = secret;
+        // const encryptedSecretPhrase = secret;
 
-        // const encryptedSecretPhrase = await vetKeyService.encryptWithSecretKey(
-        //   title,
-        //   user?.secretKey,
-        //   principalId,
-        //   secret,
-        //   actor
-        // );
+        const encryptedSecretPhrase = await vetKeyService.encryptWithSecretKey(
+          title,
+          user?.secretKey,
+          principalId,
+          secret,
+          actor
+        );
 
         console.log(encryptedSecretPhrase);
 
@@ -104,25 +104,28 @@ export const useSecrets: UseSecrets = () => {
   ): Promise<string | undefined> => {
     if (secretKey !== user?.secretKey) {
       toast.error('You password is wrong');
+
+      return;
     }
 
     try {
       if (actor) {
-        const secretFromBackend =
-          (await actor.get_secret_data()) as ISecretData[];
+        const secretFromBackend = (await actor.get_secret_data(
+          title
+        )) as ISecretData[];
         // const secretFromBackend =
         //   await password_manager_dapp_backend.get_secret_data(title);
 
         if (secretFromBackend && secretFromBackend[0] && principalId) {
-          const decryptedSecret = secretFromBackend[0].secret;
+          // const decryptedSecret = secretFromBackend[0].secret;
 
-          // const decryptedSecret = vetKeyService.decryptWithSecretKey(
-          //   title,
-          //   principalId,
-          //   secretKey,
-          //   secretFromBackend[0].secret,
-          //   actor
-          // );
+          const decryptedSecret = vetKeyService.decryptWithSecretKey(
+            title,
+            principalId,
+            secretKey,
+            secretFromBackend[0].secret,
+            actor
+          );
 
           return decryptedSecret;
         }

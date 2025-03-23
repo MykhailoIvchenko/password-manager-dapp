@@ -7,9 +7,9 @@ export interface IUserFromBackend {
 }
 
 export interface IUser {
-  username: string;
+  username?: string;
   principalId?: string;
-  secretKey: string;
+  secretKey?: string;
 }
 
 export interface ISecretUpdatableData {

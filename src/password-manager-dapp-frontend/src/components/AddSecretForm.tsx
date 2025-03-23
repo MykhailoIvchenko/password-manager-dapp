@@ -31,14 +31,14 @@ const AddSecretFormComponent: React.FC<IAddSecretFormProps> = ({
   const saveTask = async (secretData: ISecretUpdatableData) => {
     setIsLoading(true);
 
+    externalAction();
+
     await saveSecret(
       secretData.title,
       secretData.website,
       secretData.description,
       secretData.secret
     );
-
-    externalAction();
 
     setIsLoading(false);
   };

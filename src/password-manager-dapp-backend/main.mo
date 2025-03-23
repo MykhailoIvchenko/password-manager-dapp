@@ -7,7 +7,6 @@ import Array "mo:base/Array";
 import Blob "mo:base/Blob";
 import Nat8 "mo:base/Nat8";
 import Buffer "mo:base/Buffer";
-import Debug "mo:base/Debug";
 import Types "types";
 import Helpers "utils/helpers";
 import Hex "utils/Hex";
@@ -130,11 +129,11 @@ actor SecureStorage {
   };
 
   public shared query ({caller}) func get_secret_data(secret_title: Text) : async ?Types.Secret {
-    // let authenticated = Helpers.is_authenticated(caller);
+    let authenticated = Helpers.is_authenticated(caller);
 
-    // if (not authenticated) {
-    //   throw Error.reject("Only authenticated users can obtain data");
-    // };
+    if (not authenticated) {
+      throw Error.reject("Only authenticated users can obtain data");
+    };
 
     let principal_id = Principal.toText(caller);
 

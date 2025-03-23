@@ -38,11 +38,19 @@ const AddUserName: React.FC = () => {
           control={control}
           rules={{
             required: 'Username is required',
+            maxLength: {
+              value: 10,
+              message: 'The username can contain a maximum of 10 symbols',
+            },
+            pattern: {
+              value: /^[a-zA-Z0-9]*$/,
+              message: 'Only alphanumeric characters are allowed',
+            },
           }}
           render={({ field }) => (
             <Input
               {...field}
-              placeholder={'Enter your username...'}
+              placeholder='Enter your username...'
               error={errors?.username?.message}
             />
           )}
