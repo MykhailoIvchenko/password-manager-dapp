@@ -3,9 +3,9 @@ import { useSelectUser } from '../redux/hooks/selectHooks/useSelectUser';
 import { useDfinityAgent } from './useDfinityAgent';
 import useUserNameDispatch from '../redux/hooks/dispatchHooks/useUserNameDispatch';
 import { toast } from 'react-toastify';
-import { IUser } from '../utils/types';
+import { IUser, IUserFromBackend } from '../utils/types';
 //@ts-ignore
-import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
+// import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
 import useUserDispatch from '../redux/hooks/dispatchHooks/useUserDispatch';
 
 type UseUserData = () => {
@@ -31,9 +31,9 @@ export const useUserData: UseUserData = () => {
       setIsLoading(true);
 
       if (principalId && actor) {
-        // const userData = (await actor.get_user_by_id()) as IUser;
         const userDataArray =
-          await password_manager_dapp_backend.get_user_by_id();
+          (await actor.get_user_by_id()) as IUserFromBackend[];
+        // const userDataArray = await password_manager_dapp_backend.get_user_by_id();
 
         if (userDataArray.length > 0) {
           const userData = userDataArray[0];
@@ -59,17 +59,16 @@ export const useUserData: UseUserData = () => {
       setIsLoading(true);
 
       if (principalId && actor) {
-        // await actor.register_user(newUsername, userSecretKey);
+        await actor.register_user(newUsername, userSecretKey);
 
-        await password_manager_dapp_backend.register_user(
-          newUsername,
-          userSecretKey
-        );
+        // await password_manager_dapp_backend.register_user(
+        //   newUsername,
+        //   userSecretKey
+        // );
 
         setUsername(newUsername);
       }
     } catch (error) {
-      console.log(error);
       toast.error('An error occured during the registration');
     } finally {
       setIsLoading(false);

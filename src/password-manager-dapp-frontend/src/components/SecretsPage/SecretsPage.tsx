@@ -76,13 +76,13 @@ const SecretsPage: React.FC = () => {
       )}
 
       {selectedSecretTitle && (
-        <Modal isOpen={!!selectedSecretTitle} onClose={handleCloseGetSecretModal}>
-          <ShowSecret title={selectedSecretTitle} getSecret={getSecret}/>
+        <Modal
+          isOpen={!!selectedSecretTitle}
+          onClose={handleCloseGetSecretModal}
+        >
+          <ShowSecret title={selectedSecretTitle} getSecret={getSecret} />
         </Modal>
-
-      )
-
-      }
+      )}
     </div>
   );
 };

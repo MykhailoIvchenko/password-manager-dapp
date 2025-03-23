@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelectUser } from '../redux/hooks/selectHooks/useSelectUser';
 import { useDfinityAgent } from './useDfinityAgent';
 import { toast } from 'react-toastify'; //@ts-ignore
-import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
-import { vetKeyService } from '../services/vetkeyService';
+// import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
+// import { vetKeyService } from '../services/vetkeyService';
+import { ISecretData } from '../utils/types';
 
 type UseSecrets = () => {
   secretsTitles: string[];
@@ -31,8 +32,8 @@ export const useSecrets: UseSecrets = () => {
     if (principalId && actor) {
       try {
         let userSecretsTitles: string[] =
-          await password_manager_dapp_backend.get_user_secrets_titles();
-        // (await actor.get_user_secrets_titles());
+          (await actor.get_user_secrets_titles()) as string[];
+        // await password_manager_dapp_backend.get_user_secrets_titles();
 
         userSecretsTitles.sort((prev, next) => prev.localeCompare(next));
 
@@ -55,8 +56,6 @@ export const useSecrets: UseSecrets = () => {
       try {
         setSecretsTitles((prev) => [title, ...prev]);
 
-        console.log(principalId, user);
-
         if (!principalId || !user?.secretKey) {
           return;
         }
@@ -73,20 +72,20 @@ export const useSecrets: UseSecrets = () => {
 
         console.log(encryptedSecretPhrase);
 
-        if (encryptedSecretPhrase) {
-          await password_manager_dapp_backend.create_user_secret(
+        if (actor && encryptedSecretPhrase) {
+          // await password_manager_dapp_backend.create_user_secret(
+          //   title,
+          //   website,
+          //   description,
+          //   encryptedSecretPhrase
+          // );
+
+          await actor.create_user_secret(
             title,
             website,
             description,
             encryptedSecretPhrase
           );
-
-          // await actor?.create_user_secret(
-          //   title,
-          //   website,
-          //   description,
-          //   encryptedSecretPhrase,
-          // );
 
           toast.success('Congratulations! The secret was saved');
           await getSecretsTitlesAndSet();
@@ -110,7 +109,9 @@ export const useSecrets: UseSecrets = () => {
     try {
       if (actor) {
         const secretFromBackend =
-          await password_manager_dapp_backend.get_secret_data(title);
+          (await actor.get_secret_data()) as ISecretData[];
+        // const secretFromBackend =
+        //   await password_manager_dapp_backend.get_secret_data(title);
 
         if (secretFromBackend && secretFromBackend[0] && principalId) {
           const decryptedSecret = secretFromBackend[0].secret;
@@ -125,8 +126,6 @@ export const useSecrets: UseSecrets = () => {
 
           return decryptedSecret;
         }
-
-        // const secretFromBackend = await actor.get_secret_data();
       }
     } catch (error) {
       toast.error('Something went wrong during the secret retreiving');
