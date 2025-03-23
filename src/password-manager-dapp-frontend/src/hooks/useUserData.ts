@@ -66,7 +66,11 @@ export const useUserData: UseUserData = () => {
         //   userSecretKey
         // );
 
-        setUsername(newUsername);
+        setUserData({
+          username: newUsername,
+          secretKey: userSecretKey,
+          principalId,
+        });
       }
     } catch (error) {
       toast.error('An error occured during the registration');
