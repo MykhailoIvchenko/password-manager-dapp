@@ -3,14 +3,15 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import environment from 'vite-plugin-environment';
 import dotenv from 'dotenv';
-// import wasm from 'vite-plugin-wasm';
-// import topLevelAwait from 'vite-plugin-top-level-await';
+import wasm from 'vite-plugin-wasm';
+import topLevelAwait from 'vite-plugin-top-level-await';
 
 dotenv.config({ path: '../../.env' });
 
 export default defineConfig({
   build: {
     emptyOutDir: true,
+    target: 'esnext',
     assetsInclude: ['**/*.wasm'],
   },
   optimizeDeps: {
@@ -19,6 +20,7 @@ export default defineConfig({
         global: 'globalThis',
       },
     },
+    exclude: ['@swc/core'],
   },
   server: {
     proxy: {
@@ -27,17 +29,21 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    mimeTypes: {
+      'application/wasm': ['wasm'],
+    },
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
   },
   plugins: [
     react(),
     environment('all', { prefix: 'CANISTER_' }),
     environment('all', { prefix: 'DFX_' }),
-    // wasm({
-    //   fetch: true,
-    //   sync: false,
-    //   url: true,
-    // }),
-    // topLevelAwait(),
+    wasm(),
+    topLevelAwait(),
   ],
   resolve: {
     alias: [

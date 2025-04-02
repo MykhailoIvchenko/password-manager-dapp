@@ -16,6 +16,7 @@
     "src/password-manager-dapp-frontend"
   ],
   "dependencies": {
-    "@nfid/identitykit": "^1.0.10"
+    "@nfid/identitykit": "^1.0.10",
+    "@swc/core": "^1.11.16"
   }
 }

@@ -8,6 +8,7 @@ import ToastProvider from './components/ToastProvider';
 // @ts-ignore
 import { IdentityKitProvider } from '@nfid/identitykit/react';
 import { NFIDW, Plug, InternetIdentity, Stoic, OISY } from '@nfid/identitykit';
+import vetkd from 'ic-vetkd-utils';
 import '@nfid/identitykit/react/styles.css';
 import './styles/index.scss';
 
@@ -21,3 +22,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </IdentityKitProvider>
   </ErrorBoundary>
 );
+
+await vetkd('ic_vetkd_utils_bg.wasm');
