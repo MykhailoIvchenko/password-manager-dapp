@@ -30,14 +30,15 @@ actor SecureStorage {
     }) -> async ({ encrypted_key : Blob });
   };
 
-  let vetkd_system_api : VETKD_SYSTEM_API = actor ("s55qq-oqaaa-aaaaa-aaakq-cai");
+  let vetkd_system_api : VETKD_SYSTEM_API = actor ("bquul-oaaaa-aaaag-at7ia-cai");
 
   public shared ({ caller }) func get_user_encryption_key(user_secret_key: Text) : async Text {
     let { public_key } = await vetkd_system_api.vetkd_public_key({
         canister_id = null;
-        derivation_path = Array.make(Text.encodeUtf8(user_secret_key));
-        key_id = { curve = #bls12_381_g2; name = "user_key" };
+        derivation_path = Array.make(Text.encodeUtf8("note_symmetric_key"#user_secret_key));
+        key_id = { curve = #bls12_381_g2; name = "test_key_1" };
     });
+
     Hex.encode(Blob.toArray(public_key));
   };
 
@@ -54,7 +55,6 @@ actor SecureStorage {
     return bytes;
   };
 
-
   public shared ({ caller }) func get_encrypted_symmetric_key(data_id : Text, encryption_public_key : Blob, user_secret_key : Text) : async Text {
     let caller_text = Principal.toText(caller);
     
@@ -68,13 +68,12 @@ actor SecureStorage {
     let { encrypted_key } = await vetkd_system_api.vetkd_derive_encrypted_key({
         derivation_id;
         derivation_path = derivation_path;
-        key_id = { curve = #bls12_381_g2; name = "user_key" };
+        key_id = { curve = #bls12_381_g2; name = "test_key_1" };
         encryption_public_key;
     });
     
     Hex.encode(Blob.toArray(encrypted_key))
 };
-
 
   func is_username_exists(username: Text): Bool {
     switch (Trie.get(usernames, Helpers.key(username), Text.equal)) {

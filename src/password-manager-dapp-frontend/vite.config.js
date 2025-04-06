@@ -12,7 +12,6 @@ export default defineConfig({
   build: {
     emptyOutDir: true,
     target: 'esnext',
-    assetsInclude: ['**/*.wasm'],
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -20,7 +19,6 @@ export default defineConfig({
         global: 'globalThis',
       },
     },
-    exclude: ['@swc/core'],
   },
   server: {
     proxy: {
@@ -31,11 +29,6 @@ export default defineConfig({
     },
     mimeTypes: {
       'application/wasm': ['wasm'],
-    },
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
     },
   },
   plugins: [

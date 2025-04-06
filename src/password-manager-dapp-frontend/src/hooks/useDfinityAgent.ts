@@ -23,11 +23,11 @@ export const useDfinityAgent: UseDfinityAgent = () => {
 
   const idlFactory = ({ IDL }: { IDL: any }) =>
     IDL.Service({
-      get_user_encryption_key: IDL.Func([IDL.Text], [IDL.Text], ['query']),
+      get_user_encryption_key: IDL.Func([IDL.Text], [IDL.Text], []),
       get_encrypted_symmetric_key: IDL.Func(
-        [IDL.Nat, IDL.Vec(IDL.Nat8), IDL.Text],
+        [IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text],
         [IDL.Text],
-        ['query']
+        []
       ),
       get_user_by_id: IDL.Func(
         [],

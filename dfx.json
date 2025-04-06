@@ -1,15 +1,8 @@
 {
   "canisters": {
     "internet_identity": {
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "frontend": {},
-      "remote": {
-        "id": {
-          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
-        }
-      },
-      "type": "custom",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
+      "type": "pull",
+      "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
     },
     "vetkd_system_api": {
       "candid": "vetkd_system_api.did",
@@ -18,10 +11,11 @@
     },
     "password-manager-dapp-backend": {
       "main": "src/password-manager-dapp-backend/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "dependencies": ["vetkd_system_api"]
     },
     "password-manager-dapp-frontend": {
-      "dependencies": ["password-manager-dapp-backend"],
+      "dependencies": ["password-manager-dapp-backend", "vetkd_system_api"],
       "source": ["src/password-manager-dapp-frontend/dist"],
       "type": "assets",
       "workspace": "password-manager-dapp-frontend"

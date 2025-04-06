@@ -46,7 +46,12 @@ async function fetchKeyIfNeeded(
       tsk.public_key(),
       userSecretKey
     );
+
+    console.log('ekBytesHex', ekBytesHex);
+
     const pkBytesHex = await actor.get_user_encryption_key(userSecretKey);
+
+    console.log('pkBytesHex', pkBytesHex);
 
     // const ekBytesHex =
     //   await password_manager_dapp_backend.get_encrypted_symmetric_key(
@@ -95,7 +100,8 @@ async function encryptWithSecretKey(
   await fetchKeyIfNeeded(secretId, userSecretKey, principalId, actor);
   const dataKey: CryptoKey | undefined = await get([secretId, principalId]);
 
-  console.log(dataKey);
+  console.log('DATA KEY IS ', dataKey);
+
   if (!dataKey) {
     return;
   }
