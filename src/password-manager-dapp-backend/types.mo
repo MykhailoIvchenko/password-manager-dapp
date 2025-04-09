@@ -11,6 +11,11 @@ type Secret = {
   secret : Text;
 };
 
+type UserPublic = {
+  principal_id : Text;
+  username : Text;
+};
+
 type User = {
   principal_id: Text;
   username : Text;

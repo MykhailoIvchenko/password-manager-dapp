@@ -1,7 +1,6 @@
 import { get, set } from 'idb-keyval';
 //@ts-ignore
 import * as vetkd from 'ic-vetkd-utils';
-// import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
 
 const hexDecode = (hexString: string) =>
   Uint8Array.from(
@@ -34,7 +33,6 @@ function bigintTo128BitBigEndianUint8Array(bn: bigint): Uint8Array {
 
 async function fetchKeyIfNeeded(
   secretId: bigint,
-  userSecretKey: string,
   principalId: string,
   actor: any
 ) {
@@ -44,34 +42,17 @@ async function fetchKeyIfNeeded(
 
     const ekBytesHex = await actor.get_encrypted_symmetric_key(
       secretId,
-      tsk.public_key(),
-      userSecretKey
+      tsk.public_key()
     );
 
-    const pkBytesHex = await actor.get_user_encryption_key(userSecretKey);
-
-    // const ekBytesHex =
-    //   await password_manager_dapp_backend.get_encrypted_symmetric_key(
-    //     secretId,
-    //     tsk.public_key(),
-    //     userSecretKey
-    //   );
-
-    // const pkBytesHex =
-    //   await password_manager_dapp_backend.get_user_encryption_key(
-    //     userSecretKey
-    //   );
+    const pkBytesHex = await actor.get_user_encryption_key();
 
     const secretIdBytes: Uint8Array =
       bigintTo128BitBigEndianUint8Array(secretId);
 
     const ownerUtf8: Uint8Array = new TextEncoder().encode(principalId);
 
-    // const ownerUtf8Trimmed = ownerUtf8.slice(0, 16);
-
-    let derivationId = new Uint8Array(
-      secretIdBytes.length + ownerUtf8.length
-    );
+    let derivationId = new Uint8Array(secretIdBytes.length + ownerUtf8.length);
 
     derivationId.set(secretIdBytes);
     derivationId.set(ownerUtf8, secretIdBytes.length);
@@ -83,8 +64,6 @@ async function fetchKeyIfNeeded(
       32,
       new TextEncoder().encode('aes-256-gcm')
     );
-
-    console.log(aes256GcmKeyRaw);
 
     const dataKey: CryptoKey = await window.crypto.subtle.importKey(
       'raw',
@@ -100,19 +79,16 @@ async function fetchKeyIfNeeded(
 
 async function encryptWithSecretKey(
   secretId: bigint,
-  userSecretKey: string,
   principalId: string,
   secretToStore: string,
   actor: any
 ) {
-  await fetchKeyIfNeeded(secretId, userSecretKey, principalId, actor);
+  await fetchKeyIfNeeded(secretId, principalId, actor);
 
   const dataKey: CryptoKey | undefined = await get([
     secretId.toString(),
     principalId,
   ]);
-
-  console.log('DATA KEY IS ', dataKey);
 
   if (!dataKey) {
     return;
@@ -140,11 +116,10 @@ async function encryptWithSecretKey(
 async function decryptWithSecretKey(
   secretId: bigint,
   principalId: string,
-  userSecretKey: string,
   userSecret: string,
   actor: any
 ) {
-  await fetchKeyIfNeeded(secretId, userSecretKey, principalId, actor);
+  await fetchKeyIfNeeded(secretId, principalId, actor);
 
   const secretKey: CryptoKey | undefined = await get([
     secretId.toString(),

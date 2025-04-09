@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSelectUser } from '../redux/hooks/selectHooks/useSelectUser';
 import { useDfinityAgent } from './useDfinityAgent';
 import { toast } from 'react-toastify'; //@ts-ignore
-// import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
 import { vetKeyService } from '../services/vetkeyService';
 import { ISecretData } from '../utils/types';
 
@@ -33,7 +32,6 @@ export const useSecrets: UseSecrets = () => {
       try {
         let userSecretsTitles: string[] =
           (await actor.get_user_secrets_titles()) as string[];
-        // await password_manager_dapp_backend.get_user_secrets_titles();
 
         userSecretsTitles.sort((prev, next) => prev.localeCompare(next));
 
@@ -54,33 +52,24 @@ export const useSecrets: UseSecrets = () => {
       secret: string
     ) => {
       try {
-        setSecretsTitles((prev) => [title, ...prev]);
+        setSecretsTitles((prev) =>
+          [title, ...prev].sort((prev, next) => prev.localeCompare(next))
+        );
 
-        if (!principalId || !user?.secretKey || !actor) {
+        if (!principalId || !actor) {
           return;
         }
 
-        // const encryptedSecretPhrase = secret;
         const newSecretId = (await actor.get_new_secret_id()) as bigint;
 
         const encryptedSecretPhrase = await vetKeyService.encryptWithSecretKey(
           newSecretId,
-          user?.secretKey,
           principalId,
           secret,
           actor
         );
 
-        console.log(encryptedSecretPhrase);
-
         if (actor && encryptedSecretPhrase) {
-          // await password_manager_dapp_backend.create_user_secret(
-          //   title,
-          //   website,
-          //   description,
-          //   encryptedSecretPhrase
-          // );
-
           await actor.create_user_secret(
             title,
             website,
@@ -92,7 +81,6 @@ export const useSecrets: UseSecrets = () => {
           await getSecretsTitlesAndSet();
         }
       } catch (error) {
-        console.log(error);
         toast.error('Something went wrong during the secret saving');
       }
     },
@@ -103,27 +91,17 @@ export const useSecrets: UseSecrets = () => {
     title: string,
     secretKey: string
   ): Promise<string | undefined> => {
-    if (secretKey !== user?.secretKey) {
-      toast.error('You password is wrong');
-
-      return;
-    }
-
     try {
       if (actor) {
         const secretFromBackend = (await actor.get_secret_data(
-          title
+          title,
+          secretKey
         )) as ISecretData[];
-        // const secretFromBackend =
-        //   await password_manager_dapp_backend.get_secret_data(title);
 
         if (secretFromBackend && secretFromBackend[0] && principalId) {
-          // const decryptedSecret = secretFromBackend[0].secret;
-
           const decryptedSecret = vetKeyService.decryptWithSecretKey(
             secretFromBackend[0].id,
             principalId,
-            secretKey,
             secretFromBackend[0].secret,
             actor
           );
