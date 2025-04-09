@@ -15,6 +15,8 @@ actor SecureStorage {
   stable var usernames: Trie.Trie<Text, Text> = Trie.empty();
   stable var users: Trie.Trie<Text, Types.User> = Trie.empty();
   stable var secrets: Trie.Trie<Text, Trie.Trie<Text, Types.Secret>> = Trie.empty();
+  stable var secretIdCount: Nat = 1;
+
 
   type VETKD_SYSTEM_API = actor {
     vetkd_public_key : ({
@@ -32,36 +34,36 @@ actor SecureStorage {
 
   let vetkd_system_api : VETKD_SYSTEM_API = actor ("bquul-oaaaa-aaaag-at7ia-cai");
 
-  public shared ({ caller }) func get_user_encryption_key(user_secret_key: Text) : async Text {
+  public query func get_new_secret_id(): async (Nat) {       
+    return secretIdCount;
+  };
+
+  public shared ({ caller }) func get_user_encryption_key(user_secret_key: Text) : async Blob {
     let { public_key } = await vetkd_system_api.vetkd_public_key({
         canister_id = null;
         derivation_path = Array.make(Text.encodeUtf8("note_symmetric_key"#user_secret_key));
         key_id = { curve = #bls12_381_g2; name = "test_key_1" };
     });
 
-    Hex.encode(Blob.toArray(public_key));
+    return public_key;
   };
 
-  private func textToBigEndianByteArray(len: Nat, text: Text) : [Nat8] {
-    let bytes : [Nat8] = Blob.toArray(Text.encodeUtf8(text));
-
-    if (bytes.size() < len) {
-        let padding : [Nat8] = Array.freeze(Array.init<Nat8>(len - bytes.size(), 0));
-        return Array.append(bytes, padding);
-    } else if (bytes.size() > len) {
-        return Array.subArray<Nat8>(bytes, 0, len);
+  private func nat_to_big_endian_byte_array(len: Nat, n: Nat) : [Nat8] {
+    let ith_byte = func(i : Nat) : Nat8 {
+        assert (i < len);
+        let shift : Nat = 8 * (len - 1 - i);
+        Nat8.fromIntWrap(n / 2 ** shift);
     };
-
-    return bytes;
+    Array.tabulate<Nat8>(len, ith_byte);
   };
 
-  public shared ({ caller }) func get_encrypted_symmetric_key(data_id : Text, encryption_public_key : Blob, user_secret_key : Text) : async Text {
+  public shared ({ caller }) func get_encrypted_symmetric_key(data_id : Nat, encryption_public_key : Blob, user_secret_key : Text) : async Text {
     let caller_text = Principal.toText(caller);
     
-    let derivation_path = Array.make(Text.encodeUtf8(user_secret_key));
+    let derivation_path = Array.make(Text.encodeUtf8("note_symmetric_key"#user_secret_key));
     
     let buf = Buffer.Buffer<Nat8>(32);
-    buf.append(Buffer.fromArray(textToBigEndianByteArray(16, data_id)));
+    buf.append(Buffer.fromArray(nat_to_big_endian_byte_array(16, data_id)));
     buf.append(Buffer.fromArray(Blob.toArray(Text.encodeUtf8(caller_text))));
     let derivation_id = Blob.fromArray(Buffer.toArray(buf)); 
     
@@ -83,9 +85,9 @@ actor SecureStorage {
   };
 
   public query ({ caller }) func get_user_by_id() : async ?Types.User {
-    // let authenticated = Helpers.is_authenticated(caller);
+    let authenticated = Helpers.is_authenticated(caller);
 
-    // if (authenticated == false) return null;
+    if (authenticated == false) return null;
 
     let principal_id = Principal.toText(caller);
 
@@ -96,11 +98,11 @@ actor SecureStorage {
   };
 
   public shared ({caller}) func register_user(username: Text, secret_key: Text) : async Types.User {
-    // var authenticated = Helpers.is_authenticated(caller);
+    var authenticated = Helpers.is_authenticated(caller);
 
-    // if (not authenticated) {
-    //   throw Error.reject("Only authenticated users can register");
-    // };
+    if (not authenticated) {
+      throw Error.reject("Only authenticated users can register");
+    };
 
     var is_valid_username = Helpers.validate_username(username);
 
@@ -148,11 +150,11 @@ actor SecureStorage {
   };
 
   private func get_user_secrets_data(caller: Principal) : ?Trie.Trie<Text, Types.Secret> {
-    // let authenticated = Helpers.is_authenticated(caller);
+    let authenticated = Helpers.is_authenticated(caller);
 
-    // if (not authenticated) {
-    //   return null;
-    // };
+    if (not authenticated) {
+      return null;
+    };
 
     let principal_id = Principal.toText(caller);
 
@@ -208,6 +210,7 @@ actor SecureStorage {
             let principal_id = Principal.toText(caller);
 
             let new_secret: Types.Secret = {
+                id = secretIdCount;
                 principal_id = principal_id;
                 title = title;
                 website = website;
@@ -216,6 +219,8 @@ actor SecureStorage {
             };
 
             secrets := Trie.put2D(secrets, Helpers.key(principal_id), Text.equal, Helpers.key(title), Text.equal, new_secret);
+
+            secretIdCount += 1;
 
             return "User secret created successfully.";
         };

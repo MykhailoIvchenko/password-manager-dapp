@@ -20,6 +20,7 @@ export interface ISecretUpdatableData {
 }
 
 export interface ISecretData extends ISecretUpdatableData {
+  id: bigint;
   principalId: string;
 }
 

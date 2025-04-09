@@ -56,14 +56,15 @@ export const useSecrets: UseSecrets = () => {
       try {
         setSecretsTitles((prev) => [title, ...prev]);
 
-        if (!principalId || !user?.secretKey) {
+        if (!principalId || !user?.secretKey || !actor) {
           return;
         }
 
         // const encryptedSecretPhrase = secret;
+        const newSecretId = (await actor.get_new_secret_id()) as bigint;
 
         const encryptedSecretPhrase = await vetKeyService.encryptWithSecretKey(
-          title,
+          newSecretId,
           user?.secretKey,
           principalId,
           secret,
@@ -120,7 +121,7 @@ export const useSecrets: UseSecrets = () => {
           // const decryptedSecret = secretFromBackend[0].secret;
 
           const decryptedSecret = vetKeyService.decryptWithSecretKey(
-            title,
+            secretFromBackend[0].id,
             principalId,
             secretKey,
             secretFromBackend[0].secret,
