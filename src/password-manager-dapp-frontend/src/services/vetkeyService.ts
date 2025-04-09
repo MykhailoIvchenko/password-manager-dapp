@@ -1,24 +1,21 @@
 import { get, set } from 'idb-keyval';
 //@ts-ignore
-import * as vetkd from '../vetkd_user_lib/ic_vetkd_utils.js';
-import { password_manager_dapp_backend } from '../../../declarations/password-manager-dapp-backend';
+import * as vetkd from 'ic-vetkd-utils';
 
 const hexDecode = (hexString: string) =>
   Uint8Array.from(
     (hexString.match(/.{1,2}/g) || []).map((byte) => parseInt(byte, 16))
   );
 
-// const hexEncode = (bytes: any[]) =>
-//   bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+const hexDecode2 = (input: number[] | Uint8Array): Uint8Array =>
+  new Uint8Array(input);
 
-function stringTo128BitBigEndianUint8Array(str: string): Uint8Array {
-  var hex = str;
+function bigintTo128BitBigEndianUint8Array(bn: bigint): Uint8Array {
+  var hex = BigInt(bn).toString(16);
 
   while (hex.length < 32) {
     hex = '0' + hex;
   }
-
-  hex = hex.slice(0, 32);
 
   var len = hex.length / 2;
   var u8 = new Uint8Array(len);
@@ -35,48 +32,39 @@ function stringTo128BitBigEndianUint8Array(str: string): Uint8Array {
 }
 
 async function fetchKeyIfNeeded(
-  secretId: string,
-  userSecretKey: string,
+  secretId: bigint,
   principalId: string,
   actor: any
 ) {
-  if (!(await get([secretId, principalId]))) {
+  if (!(await get([secretId.toString(), principalId]))) {
     const seed = window.crypto.getRandomValues(new Uint8Array(32));
     const tsk = new vetkd.TransportSecretKey(seed);
 
-    // const ekBytesHex = await actor.get_encrypted_symmetric_key(
-    //   secretId,
-    //   tsk.public_key(),
-    //   userSecretKey
-    // );
-    // const pkBytesHex = await actor.get_user_encryption_key(userSecretKey);
+    const ekBytesHex = await actor.get_encrypted_symmetric_key(
+      secretId,
+      tsk.public_key()
+    );
 
-    const ekBytesHex =
-      await password_manager_dapp_backend.get_encrypted_symmetric_key(
-        secretId,
-        tsk.public_key(),
-        userSecretKey
-      );
-
-    const pkBytesHex =
-      await password_manager_dapp_backend.get_user_encryption_key(
-        userSecretKey
-      );
+    const pkBytesHex = await actor.get_user_encryption_key();
 
     const secretIdBytes: Uint8Array =
-      stringTo128BitBigEndianUint8Array(secretId);
+      bigintTo128BitBigEndianUint8Array(secretId);
+
     const ownerUtf8: Uint8Array = new TextEncoder().encode(principalId);
+
     let derivationId = new Uint8Array(secretIdBytes.length + ownerUtf8.length);
+
     derivationId.set(secretIdBytes);
     derivationId.set(ownerUtf8, secretIdBytes.length);
 
     const aes256GcmKeyRaw = tsk.decrypt_and_hash(
       hexDecode(ekBytesHex),
-      hexDecode(pkBytesHex),
+      hexDecode2(pkBytesHex),
       derivationId,
       32,
       new TextEncoder().encode('aes-256-gcm')
     );
+
     const dataKey: CryptoKey = await window.crypto.subtle.importKey(
       'raw',
       aes256GcmKeyRaw,
@@ -84,21 +72,24 @@ async function fetchKeyIfNeeded(
       false,
       ['encrypt', 'decrypt']
     );
-    await set([secretId, principalId], dataKey);
+
+    await set([secretId.toString(), principalId], dataKey);
   }
 }
 
 async function encryptWithSecretKey(
-  secretId: string,
-  userSecretKey: string,
+  secretId: bigint,
   principalId: string,
   secretToStore: string,
   actor: any
 ) {
-  await fetchKeyIfNeeded(secretId, userSecretKey, principalId, actor);
-  const dataKey: CryptoKey | undefined = await get([secretId, principalId]);
+  await fetchKeyIfNeeded(secretId, principalId, actor);
 
-  console.log(dataKey);
+  const dataKey: CryptoKey | undefined = await get([
+    secretId.toString(),
+    principalId,
+  ]);
+
   if (!dataKey) {
     return;
   }
@@ -123,14 +114,17 @@ async function encryptWithSecretKey(
 }
 
 async function decryptWithSecretKey(
-  secretId: string,
+  secretId: bigint,
   principalId: string,
-  userSecretKey: string,
   userSecret: string,
   actor: any
 ) {
-  await fetchKeyIfNeeded(secretId, userSecretKey, principalId, actor);
-  const secretKey: CryptoKey | undefined = await get([secretId, principalId]);
+  await fetchKeyIfNeeded(secretId, principalId, actor);
+
+  const secretKey: CryptoKey | undefined = await get([
+    secretId.toString(),
+    principalId,
+  ]);
 
   if (!secretKey) {
     return;
@@ -139,6 +133,7 @@ async function decryptWithSecretKey(
   if (userSecret.length < 13) {
     throw new Error('wrong encoding, too short to contain iv');
   }
+
   const ivDecoded = userSecret.slice(0, 12);
   const cipherDecoded = userSecret.slice(12);
   const ivEncoded = Uint8Array.from(
@@ -156,9 +151,11 @@ async function decryptWithSecretKey(
     secretKey,
     ciphertextEncoded
   );
+
   const decryptedDataDecoded = String.fromCharCode(
     ...new Uint8Array(decryptedDataEncoded)
   );
+
   return decryptedDataDecoded;
 }
 

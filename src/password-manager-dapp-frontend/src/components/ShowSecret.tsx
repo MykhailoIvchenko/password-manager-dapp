@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import Input from './ui/Input';
 import Loader from './ui/Loader';
 import Button from './ui/Button';
 import { toast } from 'react-toastify';
 import copyIcon from '../assets/img/copy.svg';
+import PasswordInput from './ui/PasswordInput';
 
 interface IShowSecretProps {
   title: string;
@@ -24,36 +24,24 @@ const ShowSecret: React.FC<IShowSecretProps> = ({ title, getSecret }) => {
 
   const getSecretInfo = async ({ secretKey }: { secretKey: string }) => {
     setIsLoading(true);
-    const secret = await getSecret(title, secretKey);
 
-    if (secret) {
-      setDecryptedSecret(secret);
+    try {
+      const secret = await getSecret(title, secretKey);
+
+      if (secret) {
+        setDecryptedSecret(secret);
+      }
+    } catch (error: any) {
+      toast.error(error?.message as string);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
-
-  // const handleCopyClick = async () => {
-  //   try {
-  //     if (decryptedSecret) {
-  //       await navigator.clipboard.writeText(decryptedSecret);
-
-  //       toast.info('Your secret was copied to the clipboard');
-  //     }
-  //   } catch (error: any) {
-  //     toast.error(error.message);
-  //   }
-  // };
 
   const handleCopyClick = async () => {
     try {
       if (decryptedSecret) {
-        const textArea = document.createElement('textarea');
-        textArea.value = decryptedSecret;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+        await navigator.clipboard.writeText(decryptedSecret);
 
         toast.info('Your secret was copied to the clipboard');
       }
@@ -94,7 +82,7 @@ const ShowSecret: React.FC<IShowSecretProps> = ({ title, getSecret }) => {
           required: 'Secret key is required',
         }}
         render={({ field }) => (
-          <Input
+          <PasswordInput
             {...field}
             label={'Secret key'}
             placeholder={'Enter the key...'}

@@ -3,6 +3,7 @@ import Input from './ui/Input';
 import Button from './ui/Button';
 import Loader from './ui/Loader';
 import { useUserData } from '../hooks/useUserData';
+import PasswordInput from './ui/PasswordInput';
 
 interface IUserDataForm {
   username: string;
@@ -63,11 +64,10 @@ const AddUserName: React.FC = () => {
             required: 'Secret key is required',
           }}
           render={({ field }) => (
-            <Input
+            <PasswordInput
               {...field}
               placeholder={'Enter your secret key...'}
               error={errors?.secretKey?.message}
-              type='password'
             />
           )}
         />
